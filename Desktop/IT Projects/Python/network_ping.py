@@ -1,26 +1,23 @@
-import os
+import subprocess
 
-# Store IP addresses with friendly labels
-devices = {
-    "HP Ubuntu (Loopback)": "127.0.0.1",
-    "HP Ubuntu (LAN IP)": "192.168.0.65",
-    "Virgin Router / Gateway": "192.168.0.1",
-    "Steam Deck": "192.168.0.108",
-    "Alienware Laptop": "192.168.0.176",
-    "Gaming PC": "192.168.0.179",
-    "Google (Internet)": "8.8.8.8"
-}
+# Your home network subnet
+subnet = "192.168.0"
 
-print("\n==========================================")
-print("      🔍 HOME LAB NETWORK AUDIT           ")
-print("==========================================\n")
+print(f"🔍 Scanning subnet {subnet}.1 to {subnet}.254...\n")
 
-for name, ip in devices.items():
-    response = os.system(f"ping -c 1 -W 1 {ip} > /dev/null 2>&1")
+active_devices = []
+
+for host in range(1, 255):
+    ip = f"{subnet}.{host}"
+    # Send 1 quick ping with a 1-second timeout (-W 1)
+    result = subprocess.run(
+        ["ping", "-c", "1", "-W", "1", ip],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
     
-    if response == 0:
-        print(f"  ✅ {name:<25} ({ip}) --> ONLINE")
-    else:
-        print(f"  ❌ {name:<25} ({ip}) --> OFFLINE")
+    if result.returncode == 0:
+        print(f"✅ [ONLINE]  {ip}")
+        active_devices.append(ip)
 
-print("\n==========================================\n")
+print(f"\n🎉 Scan complete! Found {len(active_devices)} active device(s) on your Wi-Fi.")
